@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import mongoose, { Model } from 'mongoose';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
@@ -11,6 +11,17 @@ export class CoursesService {
   }
 
   async create(createCourseDto: CreateCourseDto): Promise<Course> {
+    const queriedCourse = await this.courseModel.findOne({
+      courseId: createCourseDto.courseId,
+    });
+
+    if (queriedCourse) {
+      throw new HttpException(
+        `Course with course ID: '${createCourseDto.courseId}' already exists`,
+        HttpStatus.CONFLICT,
+      );
+    }
+
     const createdCourse = await this.courseModel.create({
       courseId: createCourseDto.courseId,
       name: createCourseDto.name,
@@ -22,11 +33,20 @@ export class CoursesService {
 
   async findAll(): Promise<Course[]> {
     const courses = await this.courseModel.find();
+    if (!courses) {
+      throw new HttpException('No courses found', HttpStatus.NOT_FOUND);
+    }
     return courses;
   }
 
   async findOne(id: string): Promise<Course> {
     const course = await this.courseModel.findOne({ courseId: id });
+    if (!course) {
+      throw new HttpException(
+        `Course with course ID: '${id}' was not found`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
     return course;
   }
 
@@ -34,7 +54,10 @@ export class CoursesService {
     const queriedCourse = await this.courseModel.findOne({ courseId: id });
 
     if (!queriedCourse) {
-      return null;
+      throw new HttpException(
+        `Course with course ID: '${id}' was not found`,
+        HttpStatus.NOT_FOUND,
+      );
     }
 
     const updatedCourse = await this.courseModel.findOneAndUpdate(
@@ -54,6 +77,12 @@ export class CoursesService {
     const deletedCourse = await this.courseModel.findOneAndDelete({
       courseId: id,
     });
+    if (!deletedCourse) {
+      throw new HttpException(
+        `Course with course ID: '${id}' was not found`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
     return deletedCourse;
   }
 }
