@@ -10,6 +10,9 @@ class CourseContent {
 
   @Prop({ required: true })
   content: string;
+
+  @Prop({ default: false })
+  isApproved: boolean;
 }
 
 export default SchemaFactory.createForClass(CourseContent);

@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { CourseContentService } from './course-content.service';
 import { CreateCourseContentDto } from './dto/create-course-content.dto';
 import { UpdateCourseContentDto } from './dto/update-course-content.dto';
@@ -17,18 +26,37 @@ export class CourseContentController {
     return this.courseContentService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.courseContentService.findOne(+id);
+  @Get('admin')
+  adminFindAll() {
+    return this.courseContentService.adminFindAll();
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCourseContentDto: UpdateCourseContentDto) {
-    return this.courseContentService.update(+id, updateCourseContentDto);
+  @Get(':id?')
+  findOne(@Param('id') id: string, @Query('step') step: string) {
+    return this.courseContentService.findOne(id, +step);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.courseContentService.remove(+id);
+  @Patch(':id/:step')
+  update(
+    @Param('id') id: string,
+    @Param('step') step: string,
+    @Body() updateCourseContentDto: UpdateCourseContentDto,
+  ) {
+    return this.courseContentService.update(id, +step, updateCourseContentDto);
+  }
+
+  @Patch('approve/:id/:step')
+  approve(@Param('id') id: string, @Param('step') step: string) {
+    return this.courseContentService.approve(id, +step);
+  }
+
+  @Patch('reject/:id/:step')
+  reject(@Param('id') id: string, @Param('step') step: string) {
+    return this.courseContentService.reject(id, +step);
+  }
+
+  @Delete('/:id/:step')
+  remove(@Param('id') id: string, @Param('step') step?: string) {
+    return this.courseContentService.remove(id, +step);
   }
 }
