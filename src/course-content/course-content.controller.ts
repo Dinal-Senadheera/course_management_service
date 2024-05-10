@@ -36,13 +36,19 @@ export class CourseContentController {
     return this.courseContentService.findOne(id, +step);
   }
 
-  @Patch(':id/:step')
+  @Patch(':id/:step?')
   update(
     @Param('id') id: string,
     @Param('step') step: string,
+    @Query('contentType') contentType: string,
     @Body() updateCourseContentDto: UpdateCourseContentDto,
   ) {
-    return this.courseContentService.update(id, +step, updateCourseContentDto);
+    return this.courseContentService.update(
+      id,
+      +step,
+      contentType,
+      updateCourseContentDto,
+    );
   }
 
   @Patch('approve/:id/:step')
@@ -50,13 +56,17 @@ export class CourseContentController {
     return this.courseContentService.approve(id, +step);
   }
 
-  @Patch('reject/:id/:step')
+  @Patch('reject/:id/:step?')
   reject(@Param('id') id: string, @Param('step') step: string) {
     return this.courseContentService.reject(id, +step);
   }
 
-  @Delete('/:id/:step')
-  remove(@Param('id') id: string, @Param('step') step?: string) {
-    return this.courseContentService.remove(id, +step);
+  @Delete('/:id/:step?')
+  remove(
+    @Param('id') id: string,
+    @Param('step') step?: string,
+    @Query('contentType') contentType?: string,
+  ) {
+    return this.courseContentService.remove(id, +step, contentType);
   }
 }
