@@ -15,11 +15,12 @@ export class CourseContentService {
     const queriedCourseContent = await this.courseContentModel.findOne({
       courseId: createCourseContentDto.courseId,
       step: createCourseContentDto.step,
+      contentType: createCourseContentDto.contentType,
     });
 
     if (queriedCourseContent) {
       throw new HttpException(
-        `Course content with course ID: '${createCourseContentDto.courseId}' and step: '${createCourseContentDto.step}' already exists`,
+        `Course content with course ID: '${createCourseContentDto.courseId}' and step: '${createCourseContentDto.step}' already exists for content type: '${createCourseContentDto.contentType}'`,
         HttpStatus.CONFLICT,
       );
     }
@@ -91,18 +92,6 @@ export class CourseContentService {
       throw new HttpException(
         `Course content with course ID: '${id}' and step: '${step}' was not found`,
         HttpStatus.NOT_FOUND,
-      );
-    }
-
-    const queriedCourseContentStep = await this.courseContentModel.findOne({
-      courseId: id,
-      step: updateCourseContentDto.step,
-    });
-
-    if (queriedCourseContentStep) {
-      throw new HttpException(
-        `Course content with course ID: '${id}' and the payload step: '${updateCourseContentDto.step}' already exists`,
-        HttpStatus.CONFLICT,
       );
     }
 
