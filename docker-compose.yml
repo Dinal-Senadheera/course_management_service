@@ -1,0 +1,16 @@
+services:
+  course-management-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: course-management-service
+    ports:
+      - '3001:3001'
+    environment:
+      - MONGO_URI=mongodb+srv://Dinal:mxm81632@cluster0.bzuizxa.mongodb.net/Course_Management_Service?retryWrites=true&w=majority&appName=Cluster0
+    depends_on:
+      - mongo
+  mongo:
+    image: mongo:latest
+    ports:
+      - '27017:27017'

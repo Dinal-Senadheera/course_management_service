@@ -15,11 +15,12 @@ export class CourseContentService {
     const queriedCourseContent = await this.courseContentModel.findOne({
       courseId: createCourseContentDto.courseId,
       step: createCourseContentDto.step,
+      contentType: createCourseContentDto.contentType,
     });
 
     if (queriedCourseContent) {
       throw new HttpException(
-        `Course content with course ID: '${createCourseContentDto.courseId}' and step: '${createCourseContentDto.step}' already exists`,
+        `Course content with course ID: '${createCourseContentDto.courseId}' and step: '${createCourseContentDto.step}' already exists for content type: '${createCourseContentDto.contentType}'`,
         HttpStatus.CONFLICT,
       );
     }
@@ -28,15 +29,14 @@ export class CourseContentService {
       courseId: createCourseContentDto.courseId,
       step: createCourseContentDto.step,
       content: createCourseContentDto.content,
+      contentType: createCourseContentDto.contentType,
     });
 
     return createdCourseContent;
   }
 
   async findAll() {
-    const courseContents = await this.courseContentModel.find({
-      isApproved: true,
-    });
+    const courseContents = await this.courseContentModel.find({});
     if (!courseContents.length) {
       throw new HttpException('No course content found', HttpStatus.NOT_FOUND);
     }
@@ -44,9 +44,15 @@ export class CourseContentService {
   }
 
   async adminFindAll() {
-    const courseContents = await this.courseContentModel.find();
+    const courseContents = await this.courseContentModel.find({
+      isApproved: false,
+      wasEvaluated: false,
+    });
     if (!courseContents.length) {
-      throw new HttpException('No course content found', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        'No course content found to be approved or rejected',
+        HttpStatus.NOT_FOUND,
+      );
     }
     return courseContents;
   }
@@ -74,6 +80,7 @@ export class CourseContentService {
   async update(
     id: string,
     step: number,
+    contentType: string,
     updateCourseContentDto: UpdateCourseContentDto,
   ) {
     const queriedCourseContent = await this.courseContentModel.findOne({
@@ -88,24 +95,14 @@ export class CourseContentService {
       );
     }
 
-    const queriedCourseContentStep = await this.courseContentModel.findOne({
-      courseId: id,
-      step: updateCourseContentDto.step,
-    });
-
-    if (queriedCourseContentStep) {
-      throw new HttpException(
-        `Course content with course ID: '${id}' and the payload step: '${updateCourseContentDto.step}' already exists`,
-        HttpStatus.CONFLICT,
-      );
-    }
-
     const updatedCourseContent = await this.courseContentModel.findOneAndUpdate(
-      { courseId: id, step: step },
+      { courseId: id, step: step, contentType: contentType },
       {
         step: updateCourseContentDto.step,
         content: updateCourseContentDto.content,
+        contentType: updateCourseContentDto.contentType,
         isApproved: false,
+        wasEvaluated: false,
       },
       { new: true },
     );
@@ -113,10 +110,11 @@ export class CourseContentService {
     return updatedCourseContent;
   }
 
-  async remove(id: string, step?: number) {
+  async remove(id: string, step?: number, contentType?: string) {
     const courseContent = await this.courseContentModel.findOneAndDelete({
       courseId: id,
       ...(step && { step: step }),
+      ...(contentType && { contentType: contentType }),
     });
 
     if (!courseContent) {
@@ -135,7 +133,7 @@ export class CourseContentService {
   async approve(id: string, step: number) {
     const courseContent = await this.courseContentModel.findOneAndUpdate(
       { courseId: id, step: step },
-      { isApproved: true },
+      { isApproved: true, wasEvaluated: true },
       { new: true },
     );
 
@@ -152,7 +150,7 @@ export class CourseContentService {
   async reject(id: string, step: number) {
     const courseContent = await this.courseContentModel.findOneAndUpdate(
       { courseId: id, step: step },
-      { isApproved: false },
+      { isApproved: false, wasEvaluated: true },
       { new: true },
     );
 
@@ -166,7 +164,6 @@ export class CourseContentService {
     return courseContent;
   }
 
-  // validateStep = async (
   //   courseId: string,
   //   step: number,
   //   checkEquality: boolean,
