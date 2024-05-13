@@ -131,7 +131,7 @@ export class CourseContentService {
   }
 
   async approve(id: string, step: number) {
-    const courseContent = await this.courseContentModel.findOneAndUpdate(
+    const courseContent = await this.courseContentModel.updateMany(
       { courseId: id, step: step },
       { isApproved: true, wasEvaluated: true },
       { new: true },
@@ -148,7 +148,7 @@ export class CourseContentService {
   }
 
   async reject(id: string, step: number) {
-    const courseContent = await this.courseContentModel.findOneAndUpdate(
+    const courseContent = await this.courseContentModel.updateMany(
       { courseId: id, step: step },
       { isApproved: false, wasEvaluated: true },
       { new: true },
