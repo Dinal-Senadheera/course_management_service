@@ -163,41 +163,4 @@ export class CourseContentService {
 
     return courseContent;
   }
-
-  //   courseId: string,
-  //   step: number,
-  //   checkEquality: boolean,
-  // ) => {
-  //   const queriedCourse = await this.courseContentModel
-  //     .find({
-  //       courseId: courseId,
-  //     })
-  //     .sort({ step: -1 });
-
-  //   if (queriedCourse.length > 0) {
-  //     if (queriedCourse[0].step - step > 1) {
-  //       throw new HttpException(
-  //         `Course content must be added in order. The next step should be: ${
-  //           queriedCourse[0].step + 1
-  //         }`,
-  //         HttpStatus.FAILED_DEPENDENCY,
-  //       );
-  //     } else if (
-  //       queriedCourse[0].step - step < 1 &&
-  //       queriedCourse[0].step - step > 0.1
-  //     ) {
-  //       throw new HttpException(
-  //         `Course content must be added in order. The next step should be: ${
-  //           queriedCourse[0].step + 0.1
-  //         }`,
-  //         HttpStatus.FAILED_DEPENDENCY,
-  //       );
-  //     } else if (checkEquality && queriedCourse[0].step === step) {
-  //       throw new HttpException(
-  //         `Course content with step: ${step} already exists for course ID: ${courseId}`,
-  //         HttpStatus.CONFLICT,
-  //       );
-  //     }
-  //   }
-  // };
 }
