@@ -51,9 +51,10 @@ jobs:
       run: |
         aws eks update-kubeconfig --region eu-north-1 --name course-microservices-cluster
 
-    - name: Apply Kubernetes Deployment
+    - name: Apply Kubernetes Deployment and Ingress
       run: |
         kubectl apply -f k8s.yaml
+        kubectl apply -f ingress.yaml
 
     - name: Verify Deployment
       run: |
