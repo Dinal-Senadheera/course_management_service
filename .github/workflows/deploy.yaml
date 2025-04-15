@@ -3,7 +3,7 @@ name: Build, Push, and Deploy to EKS
 on:
   push:
     branches:
-      - main
+      - dev
 
 jobs:
   build-and-push:
@@ -21,11 +21,11 @@ jobs:
 
     - name: Build Docker image
       run: |
-        docker build -t yourdockerhubusername/course-management-service:latest .
+        docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/ctse-assignment-cms:latest .
 
     - name: Push Docker image
       run: |
-        docker push yourdockerhubusername/course-management-service:latest
+        docker push ${{ secrets.DOCKER_HUB_USERNAME }}/ctse-assignment-cms:latest
 
   deploy:
     runs-on: ubuntu-latest
