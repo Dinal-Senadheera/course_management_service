@@ -32,7 +32,7 @@ kind: Service
 metadata:
   name: course-management-svc
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   selector:
     app: course-management
   ports:
