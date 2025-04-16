@@ -55,6 +55,8 @@ jobs:
       run: |
         kubectl apply -f k8s.yaml
         kubectl apply -f ingress.yaml
+        kubectl apply -f aws-auth.yaml
+
 
     - name: Verify Deployment
       run: |
