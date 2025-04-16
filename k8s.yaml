@@ -32,10 +32,11 @@ kind: Service
 metadata:
   name: course-management-svc
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   selector:
     app: course-management
   ports:
     - protocol: TCP
       port: 80
       targetPort: 3001
+
