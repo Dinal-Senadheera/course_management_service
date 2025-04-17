@@ -2,10 +2,11 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: course-management-deploy
+  namespace: ctse-microservices
   labels:
     app: course-management
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: course-management
@@ -21,7 +22,10 @@ spec:
         - containerPort: 3001
         env:
         - name: MONGO_URI
-          value: "mongodb+srv://Dinal:mxm81632@cluster0.bzuizxa.mongodb.net/Course_Management_Service?retryWrites=true&w=majority&appName=Cluster0"
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: cms-mongo-uri
         - name: PORT
           value: "3001"
         - name: NODE_ENV
@@ -31,15 +35,12 @@ apiVersion: v1
 kind: Service
 metadata:
   name: course-management-svc
-  annotations:
-    service.beta.kubernetes.io/aws-load-balancer-name: "course-management-nlb"
-    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+  namespace: ctse-microservices
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   selector:
     app: course-management
   ports:
     - protocol: TCP
       port: 80
       targetPort: 3001
-
