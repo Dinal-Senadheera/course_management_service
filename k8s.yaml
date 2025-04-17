@@ -6,7 +6,7 @@ metadata:
   labels:
     app: course-management
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: course-management
