@@ -13,11 +13,11 @@ export class CoursesController {
     return this.coursesService.create(createCourseDto);
   }
 
-  // @Get()
-  // findAll(@Headers('authorization') authHeader: string) {
-  //   console.log('Received token:', authHeader);
-  //   return this.coursesService.findAll();
-  // }
+  @Get()
+  findAll(@Headers('authorization') authHeader: string) {
+    console.log('Received token:', authHeader);
+    return this.coursesService.findAll();
+  }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
