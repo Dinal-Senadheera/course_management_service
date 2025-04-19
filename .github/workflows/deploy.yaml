@@ -13,6 +13,10 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
+    - name: Get Git commit hash
+      id: get_commit
+      run: echo "::set-output name=commit::$(git rev-parse --short HEAD)"
+
     - name: Log in to Docker Hub
       uses: docker/login-action@v2
       with:
@@ -21,11 +25,11 @@ jobs:
 
     - name: Build Docker image
       run: |
-        docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/ctse-assignment-cms:latest .
+        docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/ctse-assignment-cms:${{ steps.get_commit.outputs.commit }} .
 
     - name: Push Docker image
       run: |
-        docker push ${{ secrets.DOCKER_HUB_USERNAME }}/ctse-assignment-cms:latest
+        docker push ${{ secrets.DOCKER_HUB_USERNAME }}/ctse-assignment-cms:${{ steps.get_commit.outputs.commit }}
 
   deploy:
     runs-on: ubuntu-latest
@@ -55,7 +59,6 @@ jobs:
       run: |
         kubectl apply -f k8s.yaml
         kubectl apply -f aws-auth.yaml
-
 
     - name: Verify Deployment
       run: |
