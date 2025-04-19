@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: course-management-service
-        image: dinalsenadheera/ctse-assignment-cms:${{ steps.get_commit.outputs.commit }}  
+        image: dinalsenadheera/ctse-assignment-cms:IMAGE_TAG_PLACEHOLDER
         imagePullPolicy: Always
         ports:
         - containerPort: 3001
