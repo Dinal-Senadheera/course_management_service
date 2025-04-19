@@ -24,16 +24,16 @@ export class CoursesController {
     return this.coursesService.create(createCourseDto);
   }
 
-  // Both USER and ADMIN can fetch all courses
+  // USER, INSTRUCTOR, and ADMIN can fetch all courses
   @Get()
-  @UseGuards(new RolesGuard(['USER', 'ADMIN']))
+  @UseGuards(new RolesGuard(['USER', 'INSTRUCTOR', 'ADMIN']))
   findAll() {
     return this.coursesService.findAll();
   }
 
-  // Both USER and ADMIN can fetch a course by ID
+  // USER, INSTRUCTOR, and ADMIN can fetch a course by ID
   @Get(':id')
-  @UseGuards(new RolesGuard(['USER', 'ADMIN']))
+  @UseGuards(new RolesGuard(['USER', 'INSTRUCTOR', 'ADMIN']))
   findOne(@Param('id') id: string) {
     return this.coursesService.findOne(id);
   }
