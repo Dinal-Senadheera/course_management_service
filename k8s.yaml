@@ -18,6 +18,7 @@ spec:
       containers:
       - name: course-management-service
         image: dinalsenadheera/ctse-assignment-cms:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 3001
         env:
