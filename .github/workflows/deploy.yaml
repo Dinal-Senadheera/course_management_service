@@ -8,10 +8,16 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    outputs:
+      commit: ${{ steps.get_commit.outputs.commit }}
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
+
+    - name: Get Git commit hash
+      id: get_commit
+      run: echo "commit=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
     - name: Log in to Docker Hub
       uses: docker/login-action@v2
@@ -21,11 +27,11 @@ jobs:
 
     - name: Build Docker image
       run: |
-        docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/ctse-assignment-cms:latest .
+        docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/ctse-assignment-cms:${{ steps.get_commit.outputs.commit }} .
 
     - name: Push Docker image
       run: |
-        docker push ${{ secrets.DOCKER_HUB_USERNAME }}/ctse-assignment-cms:latest
+        docker push ${{ secrets.DOCKER_HUB_USERNAME }}/ctse-assignment-cms:${{ steps.get_commit.outputs.commit }}
 
   deploy:
     runs-on: ubuntu-latest
@@ -51,11 +57,14 @@ jobs:
       run: |
         aws eks update-kubeconfig --region eu-north-1 --name course-microservices-cluster
 
+    - name: Replace image tag in k8s.yaml
+      run: |
+        sed -i "s|IMAGE_TAG_PLACEHOLDER|${{ needs.build-and-push.outputs.commit }}|g" k8s.yaml
+
     - name: Apply Kubernetes Deployment and Ingress
       run: |
         kubectl apply -f k8s.yaml
         kubectl apply -f aws-auth.yaml
-
 
     - name: Verify Deployment
       run: |
