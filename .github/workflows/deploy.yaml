@@ -67,6 +67,13 @@ jobs:
       run: |
         aws eks update-kubeconfig --region eu-north-1 --name course-microservices-cluster
 
+    - name: Create Kubernetes secrets
+      run: |
+        kubectl create secret generic auth-secrets \
+        --from-literal=MONGO_URI='${{ secrets.MONGO_URI }}' \
+        -n ctse-microservices \
+        --dry-run=client -o yaml | kubectl apply -f -
+
     - name: Replace image tag in k8s.yaml
       run: |
         sed -i "s|IMAGE_TAG_PLACEHOLDER|${{ needs.build-and-push.outputs.commit }}|g" k8s.yaml
