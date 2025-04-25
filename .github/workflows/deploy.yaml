@@ -1,0 +1,90 @@
+name: Build, Push, and Deploy to EKS
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    outputs:
+      commit: ${{ steps.get_commit.outputs.commit }}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Get Git commit hash
+      id: get_commit
+      run: echo "commit=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_HUB_USERNAME }}
+        password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+    - name: Build Docker image
+      run: |
+        docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/ctse-assignment-cms:${{ steps.get_commit.outputs.commit }} .
+
+    - name: Trivy Scan for Vulnerabilities
+      uses: aquasecurity/trivy-action@0.28.0
+      with:
+        image-ref: '${{ secrets.DOCKER_HUB_USERNAME }}/ctse-assignment-cms:${{ steps.get_commit.outputs.commit }}'
+        format: 'table'
+        exit-code: '1'
+        ignore-unfixed: true
+        vuln-type: 'os,library'
+        severity: 'CRITICAL,HIGH'
+
+    - name: Push Docker image
+      run: |
+        docker push ${{ secrets.DOCKER_HUB_USERNAME }}/ctse-assignment-cms:${{ steps.get_commit.outputs.commit }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-north-1
+
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'v1.27.2'
+
+    - name: Update kubeconfig for EKS
+      run: |
+        aws eks update-kubeconfig --region eu-north-1 --name course-microservices-cluster
+
+    - name: Create Kubernetes secrets
+      run: |
+        kubectl create secret generic auth-secrets \
+        --from-literal=MONGO_URI='${{ secrets.MONGO_URI }}' \
+        -n ctse-microservices \
+        --dry-run=client -o yaml | kubectl apply -f -
+
+    - name: Replace image tag in k8s.yaml
+      run: |
+        sed -i "s|IMAGE_TAG_PLACEHOLDER|${{ needs.build-and-push.outputs.commit }}|g" k8s.yaml
+
+    - name: Apply Kubernetes Deployment and Ingress
+      run: |
+        kubectl apply -f k8s.yaml
+        kubectl apply -f aws-auth.yaml
+
+    - name: Verify Deployment
+      run: |
+        kubectl rollout status deployment/course-management-deploy -n ctse-microservices
+        kubectl get pods -n ctse-microservices
+        kubectl get svc -n ctse-microservices

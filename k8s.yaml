@@ -1,36 +1,47 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: cms-deploy
+  name: course-management-deploy
+  namespace: ctse-microservices
   labels:
-    app: local-cms
+    app: course-management
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: local-cms
+      app: course-management
   template:
     metadata:
       labels:
-        app: local-cms
+        app: course-management
     spec:
       containers:
-      - name: app
-        image: local/cms:v1
+      - name: course-management-service
+        image: dinalsenadheera/ctse-assignment-cms:IMAGE_TAG_PLACEHOLDER
+        imagePullPolicy: Always
         ports:
         - containerPort: 3001
+        env:
+        - name: PORT
+          value: '3001'
+        - name: NODE_ENV
+          value: 'production'
+        - name: MONGO_URI
+          valueFrom:
+            secretKeyRef:
+              name: auth-secrets
+              key: MONGO_URI
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: local-cms-svc
+  name: course-management-svc
+  namespace: ctse-microservices
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
-    app: local-cms
+    app: course-management
   ports:
-  - name: local-cms-port
-    protocol: TCP
-    port: 3001
-    targetPort: 3001
-    nodePort: 31000
+    - protocol: TCP
+      port: 80
+      targetPort: 3001
